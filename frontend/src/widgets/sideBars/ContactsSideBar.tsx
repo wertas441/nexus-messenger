@@ -1,15 +1,18 @@
+'use client'
 
-
-
+import SideBarHeader from "@/shared/UI/elements/sideBar/SideBarHeader";
+import SideBarSearch from "@/shared/UI/elements/sideBar/SideBarSearch";
+import {useState} from "react";
 
 export default function ContactsSideBar() {
 
-    return (
-        <aside className="sticky space-y-3 top-0 z-10 flex h-screen w-140 shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] py-4 backdrop-blur-sm" >
+    const [searchValue, setSearchValue] = useState("");
 
-            <div className={`border-b border-slate-800`}>
-                <h2 className="mb-3 px-3 text-xl font-semibold text-slate-100">Контакты</h2>
-            </div>
+    return (
+        <aside className="sticky top-0 z-10 flex h-screen w-full shrink-0 flex-col space-y-3 border-r border-slate-800 bg-[#0f172a] py-4 backdrop-blur-sm md:w-140" >
+            <SideBarHeader label={`Контакты`} />
+
+            <SideBarSearch searchValue={searchValue} setSearchValue={setSearchValue} />
 
         </aside>
     )

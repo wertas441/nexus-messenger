@@ -1,57 +1,12 @@
 'use client'
 
 import {
-    MessageCircle,
-    MessageCircleHeart,
-    MessageCircleCheck,
-    Users,
-    Settings,
     LogOut,
 } from 'lucide-react';
-import {ElementType} from "react";
-import MenuSideBarIcon from "@/shared/UI/elements/MenuSideBarIcon";
+import MenuSideBarIcon from "@/shared/UI/elements/sideBar/MenuSideBarIcon";
 import {useAppDispatch, useAppSelector} from "@/shared/store/hooks";
-import {setActiveSideBarContext, SideBarContext} from "@/shared/store/slices/sideBarContextSlice";
-
-interface itemStructure {
-    id: number;
-    label: string;
-    context: SideBarContext;
-    icon: ElementType;
-}
-
-const menuItems: itemStructure[] = [
-    {
-        id: 1,
-        label: 'Сообщения',
-        context: 'messages',
-        icon: MessageCircle,
-    },
-    {
-        id: 2,
-        label: 'Сохраненные сообщения',
-        context: 'savedMessages',
-        icon: MessageCircleHeart,
-    },
-    {
-        id: 3,
-        label: 'Архивные чаты',
-        context: 'archiveChats',
-        icon: MessageCircleCheck,
-    },
-    {
-        id: 4,
-        label: 'Контакты',
-        context: 'contacts',
-        icon: Users,
-    },
-    {
-        id: 5,
-        label: 'Настройки',
-        context: 'settings',
-        icon: Settings,
-    },
-] as const;
+import {setActiveSideBarContext} from "@/shared/store/slices/sideBarContextSlice";
+import {sideBarMenuItems} from "@/shared/config/sideBarMenuItems";
 
 export default function MenuSideBar() {
 
@@ -59,7 +14,7 @@ export default function MenuSideBar() {
     const activeContext = useAppSelector((state) => state.sideBarContext.activeContext);
 
     return (
-        <aside className="sticky bg-[#0f172a] top-0 flex h-screen w-20 shrink-0 flex-col justify-between border-r border-slate-800 ">
+        <aside className="sticky hidden bg-[#0f172a] top-0 md:flex h-screen w-20 shrink-0 flex-col justify-between border-r border-slate-800 ">
 
             <div className=" flex items-center justify-center  ">
                 <h1 className={`text-4xl py-3 font-bold text-slate-100`}>
@@ -68,7 +23,7 @@ export default function MenuSideBar() {
             </div>
 
             <nav className="flex flex-col items-center gap-3 py-6">
-                {menuItems.map((item) => (
+                {sideBarMenuItems.map((item) => (
                     <MenuSideBarIcon
                         key={item.id}
                         label={item.label}

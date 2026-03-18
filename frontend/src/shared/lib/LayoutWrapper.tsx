@@ -10,6 +10,7 @@ import ContactsSideBar from "@/widgets/sideBars/ContactsSideBar";
 import SettingsSideBar from "@/widgets/sideBars/SettingsSideBar";
 import ArchiveSideBar from "@/widgets/sideBars/ArchiveSideBar";
 import SavedSideBar from "@/widgets/sideBars/SavedSideBar";
+import MobileSideBar from "@/widgets/sideBars/MobileSideBar";
 
 function renderContext(activeContext: SideBarContext) {
     const context = {
@@ -31,16 +32,17 @@ export default function LayoutWrapper({children}: {children: ReactNode}) {
     const activeContext = useAppSelector((state) => state.sideBarContext.activeContext);
 
     return (
-        <div className={`flex`}>
+        <div className={`flex w-full`}>
 
             {!isAuthPages && (
                 <>
                     <MenuSideBar />
                     {renderContext(activeContext)}
+                    <MobileSideBar/>
                 </>
             )}
 
-            {children}
+            <div className="min-w-0 flex-1">{children}</div>
         </div>
     )
 }

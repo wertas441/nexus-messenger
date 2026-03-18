@@ -4,10 +4,12 @@ export type SideBarContext = "messages" | "savedMessages" | "archiveChats" | "co
 
 interface SideBarContextState {
     activeContext: SideBarContext;
+    isMobileMenuOpen: boolean;
 }
 
 const initialState: SideBarContextState = {
     activeContext: "messages",
+    isMobileMenuOpen: false,
 };
 
 const sideBarContextSlice = createSlice({
@@ -18,10 +20,15 @@ const sideBarContextSlice = createSlice({
     reducers: {
         setActiveSideBarContext: (state, action: PayloadAction<SideBarContext>) => {
             state.activeContext = action.payload;
+            state.isMobileMenuOpen = false;
+        },
+
+        toggleMobileMenu: (state) => {
+            state.isMobileMenuOpen = !state.isMobileMenuOpen;
         },
     },
 });
 
-export const {setActiveSideBarContext} = sideBarContextSlice.actions;
+export const { setActiveSideBarContext, toggleMobileMenu } = sideBarContextSlice.actions;
 
 export default sideBarContextSlice.reducer;

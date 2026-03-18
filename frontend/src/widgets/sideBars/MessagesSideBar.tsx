@@ -1,8 +1,9 @@
 'use client'
 
-import {Search} from "lucide-react";
 import {useMemo, useState} from "react";
-import MessageSideBarRow from "@/shared/UI/elements/MessageSideBarRow";
+import MessageSideBarRow from "@/shared/UI/elements/sideBar/MessageSideBarRow";
+import SideBarHeader from "@/shared/UI/elements/sideBar/SideBarHeader";
+import SideBarSearch from "@/shared/UI/elements/sideBar/SideBarSearch";
 
 interface ChatPreview {
     id: number;
@@ -70,29 +71,11 @@ export default function MessagesSideBar() {
     }, [searchValue]);
 
     return (
-        <aside className="sticky space-y-3 top-0 z-10 flex h-screen w-140 shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] py-4 backdrop-blur-sm">
+        <aside className="sticky top-0 z-10 flex h-screen w-full shrink-0 flex-col space-y-3 border-r border-slate-800 bg-[#0f172a] py-4 backdrop-blur-sm md:w-140">
 
-            <div className={`border-b border-slate-800`}>
-                <h2 className="mb-3 px-3 text-xl font-semibold text-slate-100">Сообщения</h2>
-            </div>
+            <SideBarHeader label={`Сообщения`} />
 
-            <div className="mb-3 px-3 pb-3">
-
-                <label className="relative block">
-                    <Search
-                        size={17}
-                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-                    />
-
-                    <input
-                        type="text"
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                        placeholder="Найти..."
-                        className="h-11 w-full rounded-xl border border-slate-700 bg-slate-900/70 pl-10 pr-3 text-sm text-slate-100 placeholder:text-slate-500 transition hover:border-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                    />
-                </label>
-            </div>
+            <SideBarSearch searchValue={searchValue} setSearchValue={setSearchValue} />
 
             <div className="scrollbar-thin px-3 flex-1 space-y-1 overflow-y-auto pr-1">
                 {!(filteredChats.length === 0) ? (
