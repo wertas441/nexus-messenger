@@ -11,6 +11,9 @@ model User {
   publicId     String    @unique @default(cuid())
   userName     String    @unique
   email        String    @unique
+  description  String
+  birthday     String
+  phoneNumber  String
   passwordHash String
   refreshTokenHash String?
   lastSeenAt   DateTime?
