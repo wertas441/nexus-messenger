@@ -22,7 +22,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      path: '/api',
+      path: '/',
     });
   }
 
@@ -31,7 +31,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      path: '/api/auth',
+      path: '/',
     });
   }
 
@@ -79,8 +79,8 @@ export class AuthController {
     @Req() request: { user: { sub: number } },
     @Res({ passthrough: true }) response: Response,
   ) {
-    response.clearCookie('accessToken', { path: '/api' });
-    response.clearCookie('refreshToken', { path: '/api/auth' });
+    response.clearCookie('accessToken', { path: '/' });
+    response.clearCookie('refreshToken', { path: '/' });
 
     return this.authService.logout(request.user.sub);
   }

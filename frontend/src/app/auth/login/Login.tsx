@@ -6,7 +6,7 @@ import {validateUserEmail, validateUserLogin, validateUserPassword} from "@/enti
 import Link from "next/link";
 import IndigoBtn from "@/shared/UI/buttons/IndigoBtn";
 import usePageUtils from "@/shared/lib/hooks/usePageUtils";
-import {getServerErrorMessage, serverApi, showErrorMessage} from "@/shared/lib/api/base";
+import {clientApi, getServerErrorMessage, showErrorMessage} from "@/shared/lib/api/base";
 import ServerError from "@/shared/UI/errors/ServerError";
 
 interface LoginForm {
@@ -42,7 +42,7 @@ export default function Login() {
         }
 
         try {
-            await serverApi.post<LoginResponse>('/auth/login', payload);
+            await clientApi.post<LoginResponse>('/auth/login', payload);
 
             router.replace("/");
         } catch (err) {

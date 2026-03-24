@@ -9,6 +9,7 @@ export const clientApi = axios.create({
     timeout: 9000,
 });
 
+/** Прямой URL бэкенда — только для Server Components / route handlers; в браузере используйте clientApi + rewrites. */
 export const serverApi = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3001/api',
     withCredentials: true,

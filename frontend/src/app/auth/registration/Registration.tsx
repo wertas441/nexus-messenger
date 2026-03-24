@@ -12,7 +12,7 @@ import Link from "next/link";
 import IndigoBtn from "@/shared/UI/buttons/IndigoBtn";
 import {useForm} from "react-hook-form";
 import usePageUtils from "@/shared/lib/hooks/usePageUtils";
-import {getServerErrorMessage, serverApi, showErrorMessage} from "@/shared/lib/api/base";
+import {clientApi, getServerErrorMessage, showErrorMessage} from "@/shared/lib/api/base";
 import {BackendApiResponse} from "@/shared/types";
 
 interface RegistrationForm {
@@ -39,7 +39,7 @@ export default function Registration() {
         }
 
         try {
-            await serverApi.post<BackendApiResponse>('/auth/registration', payload)
+            await clientApi.post<BackendApiResponse>('/auth/registration', payload)
 
             router.push("/auth/login");
         } catch (err) {
