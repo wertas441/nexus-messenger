@@ -7,11 +7,10 @@ import { compare, hash } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { ForgotPasswordDto, LoginDto, RegistrationDto } from './utils/auth.dto';
+import { JwtPayload } from './jwt.strategy';
 
-interface TokenPayload {
-  sub: number;
-  publicId: string;
-  userName: string;
+interface RefreshTokenPayload extends JwtPayload {
+  rememberMe?: boolean;
 }
 
 @Injectable()
@@ -49,13 +48,16 @@ export class AuthService {
       throw new UnauthorizedException('Неправильно введенная почта или пароль');
     }
 
-    const tokenPayload: TokenPayload = {
+    const tokenPayload: JwtPayload = {
       sub: existingUser.id,
       publicId: existingUser.publicId,
       userName: existingUser.userName,
     };
 
-    const tokens = await this.generateTokens(tokenPayload);
+    const tokens = await this.generateTokens(
+      tokenPayload,
+      requestBody.rememberMe,
+    );
     await this.storeRefreshTokenHash(existingUser.id, tokens.refreshToken);
 
     return {
@@ -109,13 +111,17 @@ export class AuthService {
   }
 
   public async refresh(refreshToken: string) {
-    let payload: TokenPayload;
+    let payload: RefreshTokenPayload;
 
     try {
-      payload = await this.jwtService.verifyAsync<TokenPayload>(refreshToken, {
-        secret:
-          process.env.JWT_REFRESH_SECRET ?? 'dev_jwt_refresh_secret_change_me',
-      });
+      payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
+        refreshToken,
+        {
+          secret:
+            process.env.JWT_REFRESH_SECRET ??
+            'dev_jwt_refresh_secret_change_me',
+        },
+      );
     } catch {
       throw new UnauthorizedException('Некорректный refresh token');
     }
@@ -144,13 +150,13 @@ export class AuthService {
       throw new UnauthorizedException('Некорректный refresh token');
     }
 
-    const nextPayload: TokenPayload = {
+    const nextPayload: JwtPayload = {
       sub: user.id,
       publicId: user.publicId,
       userName: user.userName,
     };
 
-    const tokens = await this.generateTokens(nextPayload);
+    const tokens = await this.generateTokens(nextPayload, payload.rememberMe);
     await this.storeRefreshTokenHash(user.id, tokens.refreshToken);
 
     return {
@@ -187,19 +193,24 @@ export class AuthService {
     return 'Имя';
   }
 
-  private async generateTokens(payload: TokenPayload) {
+  private async generateTokens(payload: JwtPayload, rememberMe?: boolean) {
     const accessSecret = process.env.JWT_SECRET ?? 'dev_jwt_secret_change_me';
     const refreshSecret =
       process.env.JWT_REFRESH_SECRET ?? 'dev_jwt_refresh_secret_change_me';
+
+    const refreshTokenPayload: RefreshTokenPayload = {
+      ...payload,
+      rememberMe,
+    };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: accessSecret,
         expiresIn: '15m',
       }),
-      this.jwtService.signAsync(payload, {
+      this.jwtService.signAsync(refreshTokenPayload, {
         secret: refreshSecret,
-        expiresIn: '7d',
+        expiresIn: rememberMe ? '7d' : '1d',
       }),
     ]);
 

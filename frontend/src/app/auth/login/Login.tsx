@@ -2,18 +2,27 @@
 
 import {useForm} from "react-hook-form";
 import MainInput from "@/shared/UI/inputs/MainInput";
-import {validateUserLogin, validateUserPassword} from "@/entities/User/validation";
+import {validateUserEmail, validateUserLogin, validateUserPassword} from "@/entities/User/validation";
 import Link from "next/link";
 import IndigoBtn from "@/shared/UI/buttons/IndigoBtn";
 import usePageUtils from "@/shared/lib/hooks/usePageUtils";
 import {getServerErrorMessage, serverApi, showErrorMessage} from "@/shared/lib/api/base";
-import {BackendApiResponse} from "@/shared/types";
 import ServerError from "@/shared/UI/errors/ServerError";
 
 interface LoginForm {
-    login: string;
+    email: string;
     password: string;
     rememberMe: boolean;
+}
+
+interface LoginResponse {
+    user: {
+        id: number;
+        publicId: string;
+        userName: string;
+        email: string;
+        createdAt: string;
+    };
 }
 
 export default function Login() {
@@ -27,13 +36,13 @@ export default function Login() {
         setIsSubmitting(true);
 
         const payload = {
-            login: data.login,
+            email: data.email,
             password: data.password,
             rememberMe: data.rememberMe,
         }
 
         try {
-            await serverApi.post<BackendApiResponse>('/user/login', payload)
+            await serverApi.post<LoginResponse>('/auth/login', payload);
 
             router.replace("/");
         } catch (err) {
@@ -58,10 +67,11 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
                     <MainInput
-                        id={'login'}
-                        placeholder={`Введите ваш логин...`}
-                        error={errors.login?.message}
-                        {...register('login', {validate: (value) => validateUserLogin(value) || true})}
+                        id={'email'}
+                        placeholder={`Введите вашу почту...`}
+                        type={`email`}
+                        error={errors.email?.message}
+                        {...register('email', {validate: (value) => validateUserEmail(value) || true})}
                     />
 
                     <MainInput
