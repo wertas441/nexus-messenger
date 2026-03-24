@@ -1,18 +1,19 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginDto, RegistrationDto } from './utils/auth.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  public login(requestBody) {
-    return this.authService.login(requestBody);
+  public login(@Body() body: LoginDto) {
+    return this.authService.login(body);
   }
 
   @Post('registration')
-  public registration(requestBody) {
-    return this.authService.registration(requestBody);
+  public registration(@Body() body: RegistrationDto) {
+    return this.authService.registration(body);
   }
 
   @Post('forgot-password')
@@ -21,7 +22,7 @@ export class AuthController {
   }
 
   @Get('me')
-  public me(requestBody) {
-    return this.authService.aboutUser(requestBody);
+  public me() {
+    return this.authService.aboutUser();
   }
 }
