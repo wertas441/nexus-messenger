@@ -16,7 +16,7 @@ import {getServerErrorMessage, serverApi, showErrorMessage} from "@/shared/lib/a
 import {BackendApiResponse} from "@/shared/types";
 
 interface RegistrationForm {
-    login: string;
+    userName: string;
     email: string;
     password: string;
     confirmPassword: string;
@@ -33,13 +33,13 @@ export default function Registration() {
         setIsSubmitting(true);
 
         const payload = {
-            login: data.login,
+            userName: data.userName,
             email: data.email,
             password: data.password,
         }
 
         try {
-            await serverApi.post<BackendApiResponse>('/user/registration', payload)
+            await serverApi.post<BackendApiResponse>('/auth/registration', payload)
 
             router.push("/auth/login");
         } catch (err) {
@@ -64,9 +64,9 @@ export default function Registration() {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
                     <MainInput
                         id={'login'}
-                        placeholder={`Введите ваш логин...`}
-                        error={errors.login?.message}
-                        {...register('login', {validate: (value) => validateUserLogin(value) || true})}
+                        placeholder={`Придумайте имя пользователя...`}
+                        error={errors.userName?.message}
+                        {...register('userName', {validate: (value) => validateUserLogin(value) || true})}
                     />
 
                     <MainInput
@@ -80,7 +80,7 @@ export default function Registration() {
                     <MainInput
                         id={'password'}
                         type="password"
-                        placeholder={`Введите ваш пароль...`}
+                        placeholder={`Придумайте пароль...`}
                         error={errors.password?.message}
                         {...register('password', {validate: (value) => validateUserPassword(value) || true})}
                     />

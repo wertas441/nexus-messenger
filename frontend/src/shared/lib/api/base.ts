@@ -10,7 +10,7 @@ export const clientApi = axios.create({
 });
 
 export const serverApi = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3002/api',
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3001/api',
     withCredentials: true,
     timeout: 9000,
 });

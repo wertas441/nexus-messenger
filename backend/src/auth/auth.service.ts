@@ -4,12 +4,22 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
-import { LoginDto, RegistrationDto } from './utils/auth.dto';
+import { ForgotPasswordDto, LoginDto, RegistrationDto } from './utils/auth.dto';
+
+interface TokenPayload {
+  sub: number;
+  publicId: string;
+  userName: string;
+}
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   public async login(requestBody: LoginDto) {
     const email = requestBody.email.trim().toLowerCase();
@@ -39,7 +49,18 @@ export class AuthService {
       throw new UnauthorizedException('Неправильно введенная почта или пароль');
     }
 
+    const tokenPayload: TokenPayload = {
+      sub: existingUser.id,
+      publicId: existingUser.publicId,
+      userName: existingUser.userName,
+    };
+
+    const tokens = await this.generateTokens(tokenPayload);
+    await this.storeRefreshTokenHash(existingUser.id, tokens.refreshToken);
+
     return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: {
         id: existingUser.id,
         publicId: existingUser.publicId,
@@ -84,14 +105,117 @@ export class AuthService {
       },
     });
 
-    return true;
+    return { success: true };
   }
 
-  public forgotPassword(body) {
-    return body;
+  public async refresh(refreshToken: string) {
+    let payload: TokenPayload;
+
+    try {
+      payload = await this.jwtService.verifyAsync<TokenPayload>(refreshToken, {
+        secret:
+          process.env.JWT_REFRESH_SECRET ?? 'dev_jwt_refresh_secret_change_me',
+      });
+    } catch {
+      throw new UnauthorizedException('Некорректный refresh token');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        publicId: true,
+        userName: true,
+        email: true,
+        createdAt: true,
+        refreshTokenHash: true,
+      },
+    });
+
+    if (!user?.refreshTokenHash) {
+      throw new UnauthorizedException('Refresh token отозван');
+    }
+
+    const isRefreshTokenValid = await compare(
+      refreshToken,
+      user.refreshTokenHash,
+    );
+    if (!isRefreshTokenValid) {
+      throw new UnauthorizedException('Некорректный refresh token');
+    }
+
+    const nextPayload: TokenPayload = {
+      sub: user.id,
+      publicId: user.publicId,
+      userName: user.userName,
+    };
+
+    const tokens = await this.generateTokens(nextPayload);
+    await this.storeRefreshTokenHash(user.id, tokens.refreshToken);
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        publicId: user.publicId,
+        userName: user.userName,
+        email: user.email,
+        createdAt: user.createdAt,
+      },
+    };
+  }
+
+  public async logout(userId: number) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        refreshTokenHash: null,
+      },
+    });
+
+    return { success: true };
+  }
+
+  public forgotPassword(body: ForgotPasswordDto) {
+    return `В разработке`;
   }
 
   public aboutUser() {
     return 'Имя';
+  }
+
+  private async generateTokens(payload: TokenPayload) {
+    const accessSecret = process.env.JWT_SECRET ?? 'dev_jwt_secret_change_me';
+    const refreshSecret =
+      process.env.JWT_REFRESH_SECRET ?? 'dev_jwt_refresh_secret_change_me';
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: accessSecret,
+        expiresIn: '15m',
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: refreshSecret,
+        expiresIn: '7d',
+      }),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
+
+  private async storeRefreshTokenHash(userId: number, refreshToken: string) {
+    const refreshTokenHash = await hash(refreshToken, 10);
+
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        refreshTokenHash,
+      },
+    });
   }
 }
